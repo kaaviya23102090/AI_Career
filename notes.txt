@@ -20,3 +20,5 @@ Copy that key; you will use it in the code below.
 Install the Groq library: pip install groq , pip install flask flask-sqlalchemy flask-login groq requests
 
 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
+
+https://onecompiler.com/html/44a7hfbzp
