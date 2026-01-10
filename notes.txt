@@ -1,0 +1,22 @@
+Google sheets_excel url:https://script.google.com/macros/s/AKfycbySx11QxykehUL_0Lr4hW6oBBdcOshDhU6B0Hw8Ta1P7PpujjsbH29obyN96F6NW3qH/exec
+
+Run the gs code in -->Google sheets--> Extension--> app script-->run the code--> deploy as web app
+
+
+TNEA_Project/
+├── app.py              <-- Your Python code
+├── users.db            <-- Database (Auto-generated)
+└── templates/          <-- MUST be named "templates"
+    ├── auth.html       <-- Your Login/Signup code
+    └── chatbot.html    <-- Your Chatbot code
+
+1. Setup Groq
+Go to Groq Cloud.
+
+Sign in (it's free) and click "Create API Key".
+
+Copy that key; you will use it in the code below.
+
+Install the Groq library: pip install groq , pip install flask flask-sqlalchemy flask-login groq requests
+
+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
