@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #020617; color: white; overflow: hidden; }
+        #bg-canvas { position: fixed; inset: 0; opacity: 0.15; z-index: -1; }
+        .tab-active { border-bottom: 2px solid #3b82f6; color: white; }
+        .tab-inactive { color: #64748b; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="h-screen flex items-center justify-center p-6">
+    <canvas id="bg-canvas"></canvas>
+    
+    <div class="bg-slate-900/80 p-10 rounded-[3rem] border border-blue-500/30 w-full max-w-md text-center backdrop-blur-xl shadow-2xl">
+        <img src="https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:qcwg32gkwdpifhilhi7ba5qy/bafkreigo7snc4viwe7fatewf5kaz7rjaeqnubycdn5qn4bhwyblr7hohmu@jpeg" 
+             class="h-20 w-20 rounded-full mx-auto mb-4 border-2 border-blue-500/50 p-1 object-cover">
+        
+        <h1 class="text-3xl font-black mb-6 italic tracking-tighter">EDUTOR <span class="text-blue-500">PRO</span></h1>
+
+        <div class="flex justify-around mb-6 text-[10px] font-bold tracking-widest uppercase cursor-pointer">
+            <span id="t-login" onclick="setMode('login')" class="pb-1 tab-active">Login</span>
+            <span id="t-otp" onclick="setMode('otp')" class="pb-1 tab-active tab-inactive">OTP Login</span>
+            <span id="t-signup" onclick="setMode('signup')" class="pb-1 tab-inactive">Signup</span>
+        </div>
+
+        <div class="space-y-4">
+            <input id="email" type="email" placeholder="Email Address" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-blue-500 transition">
+            
+            <div id="pass-box">
+                <input id="pass" type="password" placeholder="Password" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-blue-500 transition">
+            </div>
+
+            <div id="otp-box" class="hidden">
+                <input id="otp" type="text" placeholder="6-Digit OTP" class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-blue-500 text-center tracking-widest">
+                <button onclick="getOTP()" class="text-[10px] text-blue-400 mt-2 hover:underline">Receive OTP on Website</button>
+            </div>
+
+            <button onclick="auth()" id="main-btn" class="w-full py-4 bg-blue-600 rounded-2xl font-bold hover:bg-blue-500 transition uppercase tracking-widest text-sm">Connect</button>
+            <div id="forgot" class="text-xs text-slate-500 mt-4 cursor-pointer hover:text-white" onclick="alert('Reset link sent to your memory (System Demo)')">Forgot Password?</div>
+        </div>
+        <p id="msg-display" class="mt-4 text-[10px] font-bold uppercase tracking-tighter"></p>
+    </div>
+
+    <script>
+        let mode = 'login';
+        function setMode(m) {
+            mode = m;
+            document.getElementById('t-login').className = m==='login' ? 'pb-1 tab-active' : 'pb-1 tab-inactive';
+            document.getElementById('t-otp').className = m==='otp' ? 'pb-1 tab-active' : 'pb-1 tab-inactive';
+            document.getElementById('t-signup').className = m==='signup' ? 'pb-1 tab-active' : 'pb-1 tab-inactive';
+            document.getElementById('pass-box').classList.toggle('hidden', m==='otp');
+            document.getElementById('otp-box').classList.toggle('hidden', m!=='otp');
+            document.getElementById('forgot').classList.toggle('hidden', m==='signup');
+            document.getElementById('main-btn').innerText = m === 'signup' ? 'Create Identity' : 'Connect';
+            document.getElementById('msg-display').innerText = "";
+        }
+
+        async function getOTP() {
+            const email = document.getElementById('email').value;
+            const res = await fetch('/api/send-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email}) });
+            const data = await res.json();
+            if(res.ok) alert("WEBSITE SECURITY SYSTEM:\nYour Login OTP is: " + data.otp);
+            else alert(data.msg);
+        }
+
+        async function auth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pass').value;
+            const otp = document.getElementById('otp').value;
+            const display = document.getElementById('msg-display');
+            
+            let ep = '/api/login', body = {email, password};
+            if(mode==='signup') ep='/api/signup';
+            if(mode==='otp') { ep='/api/verify-otp'; body={email, otp}; }
+
+            const res = await fetch(ep, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+            const data = await res.json();
+
+            if(res.ok) {
+                if(mode==='signup') { 
+                    alert("Account Created. Please Login."); 
+                    setMode('login'); 
+                } else {
+                    window.location.href='/dashboard';
+                }
+            } else { 
+                // Display the specific "Account name already exist" message
+                display.innerText = data.msg;
+                display.className = "mt-4 text-[10px] font-bold uppercase tracking-tighter text-red-500";
+            }
+        }
+
+        // Binary Rain
+        const c = document.getElementById('bg-canvas'); const x = c.getContext('2d');
+        function rz() { c.width = window.innerWidth; c.height = window.innerHeight; }
+        window.onresize = rz; rz();
+        const d = Array(Math.floor(c.width/20)).fill(1);
+        function dr() {
+            x.fillStyle = "rgba(2, 6, 23, 0.1)"; x.fillRect(0,0,c.width,c.height);
+            x.fillStyle = "#3b82f6"; x.font = "14px monospace";
+            d.forEach((y, i) => {
+                x.fillText(Math.floor(Math.random()*2), i*20, y*20);
+                if(y*20 > c.height && Math.random() > 0.975) d[i] = 0; d[i]++;
+            });
+        }
+        setInterval(dr, 50);
+    </script>
+</body>
+</html>
