@@ -1,22 +1,22 @@
-# 🎓 AI Career — AI-Powered Career Guidance Platform
+#  AI Career — AI-Powered Career Guidance Platform
 
 > A Flask-based career guidance web application that delivers personalized college recommendations and AI-driven mentorship using Groq's Llama 3.3 model.
 
 ---
 
-## 📌 Overview
+## overview
 
 **AI Career** is an intelligent career counseling platform designed to help students navigate their academic and professional journey. By leveraging the power of large language models, it provides personalized college recommendations, career path suggestions, and real-time AI mentorship — all through a clean, conversational chat interface.
 
 ---
 
-## ✨ Features
+## Features
 
-- 🤖 **AI-Powered Chatbot** — Conversational career guidance powered by Groq's Llama 3.3 model
-- 🎯 **Personalized College Recommendations** — Tailored suggestions based on user inputs and preferences
-- 🔐 **Secure User Authentication** — Login and registration system built with Flask-Login
-- 💬 **Persistent Chat History** — All conversations stored and retrieved via SQLite database
-- 🌐 **Web Deployment** — Hosted on OneCompiler with Cloudflare for secure DNS and environment management
+-  **AI-Powered Chatbot** — Conversational career guidance powered by Groq's Llama 3.3 model
+-  **Personalized College Recommendations** — Tailored suggestions based on user inputs and preferences
+-  **Secure User Authentication** — Login and registration system built with Flask-Login
+-  **Persistent Chat History** — All conversations stored and retrieved via SQLite database
+-  **Web Deployment** — Hosted on OneCompiler with Cloudflare for secure DNS and environment management
 
 ---
 
@@ -52,7 +52,7 @@ AI_Career/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -93,7 +93,7 @@ Make sure you have the following installed:
 
 ---
 
-## 🔑 Environment Variables
+##  Environment Variables
 
 | Variable | Description |
 |---|---|
@@ -102,7 +102,7 @@ Make sure you have the following installed:
 
 ---
 
-## 💡 How It Works
+##  How It Works
 
 1. User registers or logs in through the authentication page
 2. User enters career-related queries in the chatbot interface
@@ -112,7 +112,7 @@ Make sure you have the following installed:
 
 ---
 
-## 🌍 Deployment
+##  Deployment
 
 The application is deployed using:
 - **OneCompiler** — for application hosting
