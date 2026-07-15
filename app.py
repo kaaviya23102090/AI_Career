@@ -4,14 +4,13 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from groq import Groq
 import random
-import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-fallback-key-change-me')
+app.config['SECRET_KEY'] = ' '
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///edutor.db'
 db = SQLAlchemy(app)
 
-client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
+client = Groq(api_key="")
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'auth_page'
@@ -143,4 +142,4 @@ def logout(): logout_user(); return redirect(url_for('auth_page'))
 
 if __name__ == '__main__':
     with app.app_context(): db.create_all()
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+    app.run(debug=True)
