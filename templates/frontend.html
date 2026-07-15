@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edutor AI — Cinematic Intro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: { 500: '#238FFF', 100: '#D3EAFF' },
+            accent: { 500: '#7CFFDA' },
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            fadeOut: { '0%': { opacity: '1' }, '100%': { opacity: '0' } },
+            bookOpen: {
+              '0%': { transform: 'rotateY(0deg)' },
+              '100%': { transform: 'rotateY(160deg)' },
+            },
+            morphE: {
+              '0%': { transform: 'scale(0.9)', letterSpacing: '0.02em' },
+              '100%': { transform: 'scale(1)', letterSpacing: '0.06em' },
+            },
+            scaleIn: {
+              '0%': { transform: 'scale(0.92)', opacity: '0' },
+              '100%': { transform: 'scale(1)', opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(12px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            },
+          },
+          animation: {
+            fadeIn: 'fadeIn 1.2s ease-out forwards',
+            fadeOut: 'fadeOut 1.2s ease-in forwards',
+            bookOpen: 'bookOpen 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+            morphE: 'morphE 1.2s ease-out forwards',
+            scaleIn: 'scaleIn 1.2s ease-out forwards',
+            slideUp: 'slideUp 1.2s ease-out forwards',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* Background */
+    .bg-cinematic {
+      background:
+        radial-gradient(1200px 600px at 20% 20%, rgba(35, 143, 255, 0.18), transparent 60%),
+        radial-gradient(900px 500px at 80% 30%, rgba(124, 255, 218, 0.12), transparent 55%),
+        linear-gradient(180deg, #0A0F1A 0%, #0A1220 60%, #0A0F1A 100%);
+    }
+    .vignette {
+      box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Book */
+    .book {
+      width: min(64vmin, 560px);
+      height: min(44vmin, 380px);
+      perspective: 1200px;
+      transform-style: preserve-3d;
+      overflow: visible;
+    }
+    .book-cover {
+      position: absolute;
+      width: 50%;
+      height: 100%;
+      top: 0;
+      left: 25%;
+      transform-origin: left center;
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(35, 143, 255, 0.15), rgba(124, 255, 218, 0.12)),
+        #0E1A2A;
+      box-shadow:
+        inset 0 0 24px rgba(124, 255, 218, 0.15),
+        0 0 40px rgba(79, 171, 255, 0.25);
+      border: 1px solid rgba(79, 171, 255, 0.25);
+    }
+    .book-page {
+      position: absolute;
+      width: 50%;
+      height: 100%;
+      top: 0;
+      left: 25%;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
+    }
+    .book-spine {
+      position: absolute;
+      left: 24%;
+      top: 0;
+      width: 2%;
+      height: 100%;
+      background: linear-gradient(180deg, #7CFFDA, #238FFF);
+      box-shadow: 0 0 12px rgba(124, 255, 218, 0.35);
+      border-radius: 4px;
+    }
+
+    /* Letter E */
+    .letter-e {
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      background: linear-gradient(90deg, #7CFFDA 0%, #4FABFF 50%, #238FFF 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 24px rgba(124, 255, 218, 0.25);
+      filter: drop-shadow(0 0 12px rgba(79, 171, 255, 0.35));
+    }
+
+    /* Edutor AI text */
+    .text-gradient {
+      background: linear-gradient(90deg, #7CFFDA 0%, #4FABFF 50%, #238FFF 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 24px rgba(124, 255, 218, 0.25);
+    }
+
+    /* Accessibility: reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      .animate-fadeIn,
+      .animate-fadeOut,
+      .animate-bookOpen,
+      .animate-morphE,
+      .animate-scaleIn,
+      .animate-slideUp {
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-cinematic vignette overflow-visible font-display antialiased">
+  <main class="relative z-10 min-h-screen flex items-center justify-center">
+    <!-- Stage 1: Book -->
+    <section id="stage-book" class="absolute inset-0 flex items-center justify-center">
+      <div class="book relative">
+        <div id="book-cover" class="book-cover"></div>
+        <div id="book-page" class="book-page"></div>
+        <div class="book-spine"></div>
+
+        <!-- Title on cover -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div class="text-center">
+            <div class="text-gradient text-[clamp(22px,3.2vmin,32px)] font-semibold">Knowledge</div>
+            <div class="mt-2 text-brand-100/80 text-[clamp(14px,2vmin,18px)]">Structured • Accessible • Evolving</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stage 2: Letter E -->
+    <section id="stage-e" class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none">
+      <div class="p-8">
+        <div class="text-center">
+          <div id="letter-e" class="letter-e text-[clamp(64px,12vmin,160px)]">E</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stage 3: Edutor AI reveal -->
+    <section id="stage-edutor" class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none">
+      <div class="p-8">
+        <div class="text-center">
+          <h1 id="edutor-title" class="text-gradient text-[clamp(40px,8vmin,96px)] font-bold tracking-tight drop-shadow-sm opacity-0">
+            Edutor AI
+          </h1>
+          <p id="edutor-subtitle" class="mt-4 text-brand-100/90 text-[clamp(16px,2.4vmin,24px)] opacity-0">
+            Personalized learning, powered by intelligence.
+          </p>
+        </div>
+      </div>
+
+      <!-- Accent glow -->
+      <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute left-1/2 top-[35%] -translate-x-1/2 w-[50vmin] h-[50vmin] rounded-full blur-3xl opacity-30"
+             style="background: radial-gradient(circle, rgba(124,255,218,0.35) 0%, rgba(35,143,255,0.25) 40%, transparent 70%);">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Audio -->
+  <audio id="sound" src="https://assets.mixkit.co/active_storage/sfx/788/788-preview.mp3" preload="auto"></audio>
+
+  <!-- Script: sequence controller -->
+  <script>
+    // Timings (ms)
+    const BOOK_DURATION = 2400;     // book open morph
+    const E_DURATION = 1800;        // letter E morph
+    const TITLE_DELAY = 600;        // after Edutor stage shows
+    const SUBTITLE_DELAY = 1200;    // after title
+    const REDIRECT_DELAY = BOOK_DURATION + E_DURATION + 3200; // total + buffer
+
+    const REDIRECT_URL = "https://kate-stores-legislative-dressing.trycloudflare.com"; // replace with your target URL
+
+    // Elements
+    const stageBook = document.getElementById('stage-book');
+    const stageE = document.getElementById('stage-e');
+    const stageEdutor = document.getElementById('stage-edutor');
+
+    const bookCover = document.getElementById('book-cover');
+    const bookPage = document.getElementById('book-page');
+    const letterE = document.getElementById('letter-e');
+
+    const title = document.getElementById('edutor-title');
+    const subtitle = document.getElementById('edutor-subtitle');
+    const sound = document.getElementById('sound');
+
+    // Sound helper
+    function playSound() {
+      sound.currentTime = 0;
+      sound.play().catch(() => {});
+    }
+
+    // Sequence
+    function startSequence() {
+      // Stage 1: Book open
+      bookCover.classList.add('animate-bookOpen');
+      // Subtle page shimmer
+      bookPage.style.transition = 'filter 1.2s ease';
+      bookPage.style.filter = 'brightness(1.12)';
+      setTimeout(() => { bookPage.style.filter = 'brightness(1)'; }, BOOK_DURATION - 600);
+      playSound();
+
+      // Transition to Stage 2 (Letter E)
+      setTimeout(() => {
+        stageBook.classList.add('animate-fadeOut');
+        setTimeout(() => {
+          stageBook.style.opacity = '0';
+          stageBook.style.pointerEvents = 'none';
+        }, 1100);
+
+        stageE.classList.remove('pointer-events-none');
+        stageE.classList.add('animate-fadeIn');
+        stageE.style.opacity = '1';
+        playSound();
+
+        // Morph E
+        letterE.classList.add('animate-morphE');
+      }, BOOK_DURATION);
+
+      // Transition to Stage 3 (Edutor AI)
+      setTimeout(() => {
+        stageE.classList.add('animate-fadeOut');
+        setTimeout(() => {
+          stageE.style.opacity = '0';
+          stageE.style.pointerEvents = 'none';
+        }, 1100);
+
+        stageEdutor.classList.remove('pointer-events-none');
+        stageEdutor.classList.add('animate-fadeIn');
+        stageEdutor.style.opacity = '1';
+        playSound();
+
+        // Reveal text
+        setTimeout(() => {
+          title.classList.add('animate-scaleIn');
+          title.style.opacity = '1';
+        }, TITLE_DELAY);
+
+        setTimeout(() => {
+          subtitle.classList.add('animate-slideUp');
+          subtitle.style.opacity = '1';
+        }, SUBTITLE_DELAY);
+      }, BOOK_DURATION + E_DURATION);
+
+      // Redirect
+      setTimeout(() => {
+        window.location.href = REDIRECT_URL;
+      }, REDIRECT_DELAY);
+    }
+
+    // Start
+    startSequence();
+
+    // Optional: click to play sound if autoplay blocked
+    document.addEventListener('click', () => {
+      if (sound.paused) sound.play().catch(() => {});
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        if (sound.paused) sound.play().catch(() => {});
+      }
+    });
+  </script>
+
+  <!-- Fallback message -->
+  <noscript>
+    <div class="fixed inset-0 flex items-center justify-center bg-black text-white">
+      <div class="max-w-md text-center p-6">
+        <h2 class="text-2xl font-semibold mb-2">JavaScript Required</h2>
+        <p class="text-sm opacity-80">
+          This cinematic intro requires JavaScript. Please enable it to experience the Edutor AI sequence.
+        </p>
+      </div>
+    </div>
+  </noscript>
+</body>
+</html>
