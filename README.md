@@ -32,22 +32,6 @@
 | DNS & Security | Cloudflare |
 
 ---
-
-## 📁 Project Structure
-
-```
-AI_Career/
-│
-├── app.py              # Main Flask application — routes, auth, chat logic
-├── index.html          # Landing / Home page
-├── frontend.html       # Main frontend UI
-├── frontend1.html      # Alternate frontend page
-├── auth3.html          # User authentication page (login/register)
-├── chatbot3.html       # Chatbot interface
-├── exce_code.gs        # Google Apps Script for Excel/Sheets integration
-├── PROJ DB.xlsx        # Project database / data reference
-├── notes.txt           # Developer notes
-└── README.md           # Project documentation
 ```
 
 ---
