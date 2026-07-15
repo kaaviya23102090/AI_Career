@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #020617; color: white; height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.15; }
+        .hidden { display: none !important; }
+        .scroll-area { flex: 1; overflow-y: auto; scroll-behavior: smooth; padding-bottom: 2rem; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+        .msg-ai { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 20px; padding: 1.2rem; align-self: flex-start; max-width: 80%; }
+        .msg-user { background: #2563eb; border-radius: 20px; padding: 1rem; align-self: flex-end; }
+        .mic-active { color: #ef4444 !important; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        #res-preview-container { background: #f3f4f6; padding: 40px; border-radius: 8px; color: #000; font-family: 'Arial', sans-serif; }
+    </style>
+</head>
+<body>
+    <canvas id="binary-canvas"></canvas>
+
+    <nav class="p-4 border-b border-white/5 flex justify-between items-center bg-slate-900/40 backdrop-blur-xl no-print sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <img src="https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:qcwg32gkwdpifhilhi7ba5qy/bafkreigo7snc4viwe7fatewf5kaz7rjaeqnubycdn5qn4bhwyblr7hohmu@jpeg" class="h-10 w-10 rounded-full border border-blue-500/50">
+            <span class="font-bold text-xl italic tracking-tighter text-white">Edutor <span class="text-blue-500">PRO</span></span>
+        </div>
+        <div class="flex items-center gap-6">
+            <div id="speech-controls" class="hidden flex items-center gap-4 border-r border-white/10 pr-6">
+                <button onclick="toggleMute()" id="mute-btn" class="text-slate-400 hover:text-white transition"><i id="mute-icon" class="fa-solid fa-volume-high"></i></button>
+            </div>
+            <button onclick="terminateSession()" class="text-xs font-black text-red-500 uppercase tracking-widest">Terminate</button>
+        </div>
+    </nav>
+
+    <div id="view-portal" class="flex-1 flex items-center justify-center p-6 gap-8 no-print">
+        <div onclick="switchView('chat')" class="bg-slate-900/60 p-12 rounded-[3rem] border border-blue-500/20 text-center cursor-pointer hover:scale-105 transition w-64 shadow-2xl">
+            <i class="fa-solid fa-robot text-5xl text-blue-500 mb-4"></i>
+            <h2 class="text-xl font-bold uppercase">Career Mentor</h2>
+        </div>
+        <div onclick="switchView('resume')" class="bg-slate-900/60 p-12 rounded-[3rem] border border-purple-500/20 text-center cursor-pointer hover:scale-105 transition w-64 shadow-2xl">
+            <i class="fa-solid fa-file-invoice text-5xl text-purple-500 mb-4"></i>
+            <h2 class="text-xl font-bold uppercase">Resume Maker</h2>
+        </div>
+    </div>
+
+    <div id="view-chat" class="hidden flex-1 flex flex-col no-print overflow-hidden">
+        <div class="p-4 bg-black/20 flex justify-between items-center">
+            <button onclick="switchView('portal')" class="text-xs font-bold text-slate-400 hover:text-white"><i class="fa-solid fa-arrow-left mr-2"></i> EXIT</button>
+            <button onclick="clearChat()" class="text-xs font-bold text-red-400 hover:text-red-300 uppercase tracking-widest">
+                <i class="fa-solid fa-trash-can mr-2"></i> Clear Chat
+            </button>
+        </div>
+        <div id="chat-box" class="scroll-area p-8 space-y-4 flex flex-col"></div>
+        <div class="p-6 bg-slate-900/80 border-t border-white/5 flex gap-4 sticky bottom-0">
+            <button onclick="startVoice()" id="mic-btn" class="text-2xl px-4 text-slate-400 hover:text-white"><i class="fa-solid fa-microphone"></i></button>
+            <input id="chat-input" class="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4 outline-none text-white focus:border-blue-500" placeholder="Speak or type...">
+            <button onclick="sendChat()" class="bg-blue-600 px-8 rounded-2xl font-bold hover:bg-blue-500 transition">SEND</button>
+        </div>
+    </div>
+
+    <div id="view-resume" class="hidden scroll-area p-6">
+        <div class="flex flex-col items-center min-h-full justify-center">
+            <div id="res-form" class="bg-slate-900/90 p-10 rounded-[2.5rem] w-full max-w-xl border border-white/5 shadow-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="res-title" class="text-xl font-bold text-purple-400 uppercase">1. Full Name</h2>
+                    <button id="rephrase-btn" onclick="rephrase()" class="hidden text-[10px] bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/50 text-purple-300">AI REPHRASE</button>
+                </div>
+                <textarea id="res-input" rows="4" oninput="toggleRe()" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 outline-none mb-4 focus:border-purple-500 text-white"></textarea>
+                <div class="flex gap-4">
+                    <button onclick="prevStep()" id="back-btn" class="hidden flex-1 bg-slate-800 py-4 rounded-2xl font-bold hover:bg-slate-700 transition">BACK</button>
+                    <button onclick="nextStep()" class="flex-[2] bg-purple-600 py-4 rounded-2xl font-bold hover:bg-purple-500 transition">CONTINUE</button>
+                </div>
+                <p id="step-count" class="mt-4 text-[10px] text-center text-slate-500 font-bold">STEP 1 / 10</p>
+            </div>
+            <div id="res-final" class="hidden w-full max-w-4xl p-4">
+                <div id="res-preview-container" class="shadow-2xl mb-6 overflow-x-auto"></div>
+                <div class="flex flex-col gap-3">
+                    <button onclick="downloadPDF()" class="w-full bg-blue-600 py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg hover:bg-blue-500 transition">Download as PDF</button>
+                    <button onclick="location.reload()" class="w-full text-slate-500 hover:text-white text-xs py-2">Restart Process</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isMuted = false;
+        const steps = ["Full Name", "Contact Information", "Professional Summary", "Work Experience", "Education", "Skills", "Certifications", "Projects", "Awards", "Volunteer Experience"];
+        let stepIdx = 0; let resumeData = {};
+
+        // ON LOAD: Load history from DB
+        async function loadHistory() {
+            const res = await fetch('/api/get-history');
+            const history = await res.json();
+            const box = document.getElementById('chat-box');
+            box.innerHTML = "";
+            history.forEach(msg => {
+                const className = msg.role === 'user' ? 'msg-user' : 'msg-ai';
+                const content = msg.role === 'user' ? msg.content : marked.parse(msg.content);
+                box.innerHTML += `<div class="${className}">${content}</div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function clearChat() {
+            if(!confirm("Are you sure you want to clear your chat history?")) return;
+            await fetch('/api/clear-history', { method: 'POST' });
+            document.getElementById('chat-box').innerHTML = "";
+        }
+
+        function terminateSession() {
+            window.speechSynthesis.cancel();
+            window.location.href = '/logout';
+        }
+
+        function switchView(v) {
+            document.querySelectorAll('#view-portal, #view-chat, #view-resume').forEach(e => e.classList.add('hidden'));
+            document.getElementById('view-'+v).classList.remove('hidden');
+            const sc = document.getElementById('speech-controls');
+            if(v==='chat') {
+                sc.classList.remove('hidden');
+                loadHistory(); // Fetch from DB when entering chat
+            } else { 
+                sc.classList.add('hidden'); window.speechSynthesis.cancel(); 
+            }
+        }
+
+        async function saveMessage(role, content) {
+            await fetch('/api/save-message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role, content })
+            });
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chat-input'); const box = document.getElementById('chat-box');
+            if(!input.value) return; const msg = input.value; input.value = "";
+            
+            box.innerHTML += `<div class="msg-user">${msg}</div>`;
+            box.scrollTop = box.scrollHeight;
+            await saveMessage('user', msg); // Save User Msg to DB
+
+            const res = await fetch('/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:msg, mode:'mentor'}) });
+            const data = await res.json();
+            
+            box.innerHTML += `<div class="msg-ai">${marked.parse(data.reply)}</div>`;
+            box.scrollTop = box.scrollHeight;
+            await saveMessage('ai', data.reply); // Save AI Reply to DB
+
+            if(!isMuted) { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(data.reply.replace(/[*#_]/g, ''))); }
+        }
+
+        // --- PRE-EXISTING RESUME & ANIMATION LOGIC (UNCHANGED) ---
+        function toggleRe() {
+            const val = document.getElementById('res-input').value;
+            document.getElementById('rephrase-btn').classList.toggle('hidden', val.length < 5);
+        }
+        async function rephrase() {
+            const input = document.getElementById('res-input');
+            const original = input.value; input.value = "AI polishing...";
+            const res = await fetch('/api/rephrase', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text:original}) });
+            input.value = (await res.json()).rephrased;
+        }
+        function nextStep() {
+            resumeData[steps[stepIdx]] = document.getElementById('res-input').value;
+            if(stepIdx < 9) { stepIdx++; updateResUI(); } 
+            else { generateResume(); }
+        }
+        function prevStep() { if(stepIdx > 0) { stepIdx--; updateResUI(); } }
+        function updateResUI() {
+            document.getElementById('res-title').innerText = `${stepIdx+1}. ${steps[stepIdx]}`;
+            document.getElementById('res-input').value = resumeData[steps[stepIdx]] || "";
+            document.getElementById('step-count').innerText = `STEP ${stepIdx+1} / 10`;
+            document.getElementById('back-btn').classList.toggle('hidden', stepIdx === 0);
+            toggleRe();
+        }
+        async function generateResume() {
+            document.getElementById('res-form').classList.add('hidden');
+            const container = document.getElementById('res-preview-container');
+            document.getElementById('res-final').classList.remove('hidden');
+            container.innerHTML = "<div class='p-20 text-center text-slate-500 animate-pulse'>Designing Professional Resume...</div>";
+            const res = await fetch('/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:JSON.stringify(resumeData), mode:'resume'}) });
+            const data = await res.json();
+            container.innerHTML = data.reply;
+        }
+        function downloadPDF() {
+            const element = document.getElementById('res-preview-container');
+            html2pdf().set({margin:0.5, filename:'Resume_EdutorPRO.pdf', image:{type:'jpeg', quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'in', format:'letter', orientation:'portrait'}}).from(element).save();
+        }
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        if(SpeechRec) {
+            recognition = new SpeechRec();
+            recognition.onstart = () => document.getElementById('mic-btn').classList.add('mic-active');
+            recognition.onend = () => document.getElementById('mic-btn').classList.remove('mic-active');
+            recognition.onresult = (e) => { document.getElementById('chat-input').value = e.results[0][0].transcript; sendChat(); };
+        }
+        function startVoice() { if(recognition) recognition.start(); }
+        function toggleMute() { isMuted = !isMuted; document.getElementById('mute-icon').className = isMuted ? 'fa-solid fa-volume-xmark text-red-500' : 'fa-solid fa-volume-high'; if(isMuted) window.speechSynthesis.cancel(); }
+
+        const bC = document.getElementById('binary-canvas'); const bX = bC.getContext('2d');
+        function resz() { bC.width = window.innerWidth; bC.height = window.innerHeight; }
+        window.onresize = resz; resz();
+        const bDrops = Array(Math.floor(bC.width/20)).fill(1);
+        function anim() {
+            bX.fillStyle = "rgba(2, 6, 23, 0.1)"; bX.fillRect(0,0,bC.width,bC.height);
+            bX.fillStyle = "#3b82f6"; bX.font = "14px monospace";
+            bDrops.forEach((y, i) => {
+                bX.fillText(Math.floor(Math.random()*2), i*20, y*20);
+                if(y*20 > bC.height && Math.random() > 0.975) bDrops[i] = 0; bDrops[i]++;
+            });
+            requestAnimationFrame(anim);
+        }
+        anim();
+    </script>
+</body>
+</html>
